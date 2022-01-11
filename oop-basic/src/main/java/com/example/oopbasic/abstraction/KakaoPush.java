@@ -1,6 +1,6 @@
 package com.example.oopbasic.abstraction;
 
-public class KakaoPush {
+public class KakaoPush implements Notifier{
 
     public void push() {}
 }

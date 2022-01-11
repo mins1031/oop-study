@@ -42,5 +42,23 @@ public class ExampleAbstractionBenefit {
         mailService.sendMail();
     }*/
 
+    /**
+     * 위의 예에서 공통점을 뽑아보면 '통지'라는 내용을 추상화 해볼수 있다.
+     * */
+    public void cancel(String ono) {
+        //.. 주문 취소 처리 로직
+
+        Notifier notifier = getNotifier();
+        notifier.notify();
+    }
+
+    private Notifier getNotifier() {
+        boolean pushEnabled = true;
+        if (pushEnabled) {
+            return new KakaoPush();
+        } else {
+            return new SmsSender();
+        }
+    }
 
 }

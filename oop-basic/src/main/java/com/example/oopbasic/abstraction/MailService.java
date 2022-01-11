@@ -1,5 +1,5 @@
 package com.example.oopbasic.abstraction;
 
-public class MailService {
+public class MailService implements Notifier{
     public void sendMail() {}
 }
