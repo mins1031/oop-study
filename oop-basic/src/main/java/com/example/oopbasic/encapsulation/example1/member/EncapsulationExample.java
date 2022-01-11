@@ -45,7 +45,7 @@ public class EncapsulationExample {
             return AuthResult.NO_MATCH;
         }
 
-        if (member.isEmailStatusVerified(2)) {
+        if (member.isEmailStatusVerified()) {
             return AuthResult.NO_EMAIL_VERIFIED;
         }
 
