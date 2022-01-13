@@ -10,4 +10,8 @@ public class TicketSeller {
     public TicketOffice getTicketOffice() {
         return ticketOffice;
     }
+
+    public void sellTicket(Audience audience) {
+        ticketOffice.plusAmount(audience.buyTicket(ticketOffice.getTicket()));
+    }
 }
