@@ -1,4 +1,4 @@
-package com.example.object1.step2;
+package com.example.object1.ch01.step1;
 
 import lombok.Getter;
 

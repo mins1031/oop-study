@@ -1,4 +1,4 @@
-package com.example.object1.step1;
+package com.example.object1.ch01.step1;
 
 import java.util.ArrayList;
 import java.util.List;

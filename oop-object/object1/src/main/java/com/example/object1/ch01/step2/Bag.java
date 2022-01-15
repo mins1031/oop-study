@@ -1,4 +1,4 @@
-package com.example.object1.step1;
+package com.example.object1.ch01.step2;
 
 import lombok.Getter;
 
@@ -19,6 +19,17 @@ public class Bag {
 
     public boolean hasInvitation() {
         return this.invitation != null;
+    }
+
+    public Long hold(Ticket ticket) {
+        if (hasInvitation()) {
+            setTicket(ticket);
+            return 0L;
+        } else {
+            minusAmount(ticket.getFee());
+            setTicket(ticket);
+            return ticket.getFee();
+        }
     }
 
     public boolean hasTicket() {

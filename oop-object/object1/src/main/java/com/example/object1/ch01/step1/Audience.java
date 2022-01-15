@@ -1,4 +1,4 @@
-package com.example.object1.step2;
+package com.example.object1.ch01.step1;
 
 //관람객
 public class Audience {
@@ -10,9 +10,5 @@ public class Audience {
 
     public Bag getBag() {
         return bag;
-    }
-
-    public Long buyTicket(Ticket ticket) {
-        return bag.hold(ticket);
     }
 }
