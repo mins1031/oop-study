@@ -1,0 +1,15 @@
+package com.example.object1.ch02;
+
+public class SequenceCondition implements DiscountCondition{
+
+    private int sequence;
+
+    public SequenceCondition(int sequence) {
+        this.sequence = sequence;
+    }
+
+    @Override
+    public boolean isSatisfiedBy(Screening screening) {
+        return screening.isSequence(this.sequence);
+    }
+}
