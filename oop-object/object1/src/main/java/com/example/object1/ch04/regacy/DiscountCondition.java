@@ -1,4 +1,4 @@
-package com.example.object1.ch04.regucy;
+package com.example.object1.ch04.regacy;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
