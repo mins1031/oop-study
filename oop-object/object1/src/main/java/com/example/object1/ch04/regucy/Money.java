@@ -1,4 +1,4 @@
-package com.example.object1.ch04;
+package com.example.object1.ch04.regucy;
 
 import java.math.BigDecimal;
 
