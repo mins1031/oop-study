@@ -350,3 +350,56 @@
   > 비록 책임 주도 설계 방법이 훌륭한 인터페이스를 얻을 수 있는 지침을 제공한다고 하더라도 훌륭한 인터페이스가 가지는 공통적인 특징을 아는 것은 안목을 넓히고 올바른 설계에 도달할 수 있는 지름길을 제공할수 있다
   - 지금은 퍼블릭 인터페이스의 품질에 영향을 미치는 원칙과 기법에 관해 살펴본다
    ### 디미터 법칙
+   ```
+   public class ReservationAgency {
+       public Reservation reserve(Screening screening, Customer customer, int audienceCount) {
+           Movie movie = screening.getMovie();
+
+           boolean discountTable = false;
+           for (DiscountCondition discountCondition : movie.getDiscountConditions()) {
+               if (discountCondition.getType() == DiscountConditionType.PERIOD) {
+                   discountTable = screening.getWhenScreened().getDayOfWeek().equals(discountCondition.getDayOfWeek()) &&
+                           discountCondition.getStartTime().compareTo(screening.getWhenScreened().toLocalTime()) <= 0 &&
+                           discountCondition.getEndTime().compareTo(screening.getWhenScreened().toLocalTime()) >= 0;
+               } else {
+                   discountTable = discountCondition.getSequence() == screening.getSequence();
+               }
+
+               if (discountTable) {
+                   break;
+               }
+           }
+   ```
+     - 위코드의 문제는 ReservationAgency와 Screening 사이의 결합도가 너무 높기 때문에 Screening의 내부 구현을 변경할 때마다 ReservationAgency도 함께 변경된다는 것이다.
+     - 만약 Screening이 Movie를 포함하지 않게 된다면? Movie가 DiscountCondition 포함하지 않게 변경된다면? 이런 저런 변경에도 흔들리는것이 ReservationAgency 이다.
+     - 이렇게 객체의 내부 구조에 대한 결합으로 인해 발생하는 설계 문제를 해결하기 위해 제안된 원칙이 바로 디미터 법칙이다.
+     - 디미터 법칙을 간단히 요약하면 객체내부의 구조에 강하게 결합되지 않도록 협력 경로를 제한하라는 것이다.
+     - 자세한 설명은 184p를 참고하고(어렵다...) 간단하게 아래의 조건을 만족하는 인스턴스에만 메시지를 전송하도록 프로그래밍 해야 한다라고 이해해도 무방하다
+       - this 객체
+       - 메서드의 매개변수
+       - this의 속성
+       - this의 속성인 컬렉션의 요소
+       - 메서드 내에서 생성된 지역 객체
+     - 해서 위의 코드를 디미터 법칙을 적용해 줄이면
+     ```
+     public class ReservationAgency {
+       public Reservation reserve(Screening screening, Customer customer, int audienceCount) {
+         Money fee = screening.calculateFee(audienceCount);
+         return new Reservation(customer, screening, fee, audienceCount)
+       }
+     ```
+     - 위와 같이 매개변수였던 screening에 계산 자체를 맡겨 ReservationAgency는 calculateFee라는 메세지만 던졌다.
+     > 디미터 법칙은 캡슐화른 다른 관점에서 표현한 것이다. 디미터 법칙이 가치있는 이유는 클래스를 캡슐화 하기 위해 따라야 하는 구체적인 지침을 제공하기 때문이다. 캡슐화 원칙이 클래스 내부의 구현을 감춰야 한다는 사실을 강조한다면 디미터 법칙은 협력하는 클래스의 캡슐화를 지키기 위해 접근해야 하는 요소를 제한한다.
+     ```
+     screening.getMovie().getDiscountConditions();
+     ```
+     - 위의 코드는 전형적으로 디미터 법칙을 위배하는 코드이다. 흔히 이와 같은 코드를 기차 충동이라고 부른다. 기차 충돌은 클래스의 내부 구현이 외부로 노출됐을때 나타나는 전형적인 형태이다.
+     - 하지만 무비판적으로 디미터 법칙을 수용하면 퍼블릭 인터페이스 관점에서 객체의 응집도가 낮아질수도 있다.
+
+   ### 묻지말고 시켜라
+     > 묻지말고 시켜라 원칙또한 디미터 법칙 처럼 객체의 상태에 관해 묻지말고 원하는 것을 시켜야 한다는 사실을 강조하고 이러한 스타일의 메시지 작성을 장려하는 원칙을 가리키는 용어이다.
+     - 즉 위의 내용처럼 뭔가 얻어오는 게 아닌 원하는 동작을 시켜서 원하는 값을 받아야 한다는 것이다.
+     - 묻.시 원칙을 따르면 객체의 정보를 이용하는 행동을 객체의 외부가 아니니 내부에 위치시키기 때문에 자연스럽게 정보와 행동을 동일한 클래스에 두게 된다. 또한 자연스럽게 정보 전문가에게 책임을 할당하게 되고 높은 응집도를 가진 클래스를 가질 확률을 높혀준다
+     - 객체 내부의 상태를 묻는 오퍼레이션을 인터페이스에 포함시키고 있다면 더 나은 방법은 없는지 고려해봐야 하고, 내부의 상태를 이용해 어던 결정을 내리는 로직이 객체 외부에 존재한다면 객채의 책임이 외부로 누수 된것이다.
+     - 즉 상태를 묻는 오퍼레이션을 -> 행동을 요청하는 오퍼레이션 으로 대체함으로서 인터페이스를 향상시킨다.
+
