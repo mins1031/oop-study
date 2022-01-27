@@ -478,3 +478,58 @@
 
 - 7장은 프로시저 추상화와 데이터 추상화를 비교하고 마지막엔 객체지향에 대한 내용을 보여주며, 각 패러다임은 어떻게 구현되고 어떤 문제들이 있는지, 지금의 객체지향과 어떤 차이가 있는지?, 왜 객체지향이라는 페러다임이 대세인지 를 세세하게 코드를 통해 설명한다
 - 결국 본질은 '협력'과 '책임'을 중심으로한 설계가 재사용성과 유연함을 갖출수 있다는 내용이다.
+
+# 8장 의존성 관리하기
+> 잘 설계된 객체지향 어플리케이션은 작고 응집도 높은 객체들로 구성되고 이 객체이 서로 협력한다. 다만 협력은 필수적이지만 과도한 협력은 설계를 곤경에 빠뜨릴수 있다.
+- 협력은 객체가 다른 객체에 대해 알 것을 강요하고 이런 지식이 객체사이의 의존성을 낳는다
+- 협력을 위서는 의존성이 필요하지만 과도한 의존성은 어플리케이션 변경을 어렵게 만든다
+- **객체지향 설계의 핵심은 협력을 위해 필요한 의존성을 유지하면서도 변경을 방해하는 의존성은 제거하는데 있다**
+ ## 8-1 의존성에 대한 이해
+   ### 변경과 의존성
+     ```
+     public class PeriodCondition implements DiscountCondition {
+       private DayOfWeek dayOfWeek;
+       private LocalTime startTime;
+       private LocalTime endTime;
+
+       ...
+       private boolean isSatisfiedBy(Screening screening) {
+           return dayOfWeek.equals(screening.getWhenScreened().getDayOfWeek()) &&
+                   startTime.compareTo(screening.getWhenScreened().toLocalTime()) <= 0 &&
+                   endTime.compareTo(screening.getWhenScreened().toLocalTime()) >= 0;
+       }
+     }
+     ```
+     - 위의 PeriodCondition 인스턴스가 정상적으로 동작하기 위해선 Screening 인스턴스가 존재해야 한다. 만약 Screening이 없거나 getStartTime 메시지를 이해할 수 없다면 isSatisfiedBy는 재대로 동작하지 않을것이다.
+     - 이처럼 어떤 객체가 예정된 잡업을 수행하기 위해 다른 객체를 필요로 하는 경우 두객체 사이에 의존서잉 존재한다고 한다.
+     - 의존성은 방향성을 가지며 항상 단방향이다 ex 여기선 PeriodCondition이 Screening에 의존하고 있다. Screening이 변경되면 PeriodCondition이 변경될 가능성이 높지만 PeriodCondition이 변경되어도 Screening은 영향이 없다
+     - 또한 PeriodCondition은 DayOfWeek, LocalTime 타입의 데이터를 가지고 있고 DiscountCondition을 상속받고 있다. 즉 PeriodCondition은 Screening, DayOfWeek, LocalTime, DiscountCondition 4개에 의존하고 있다.
+     - 다시말해 PeriodCondition은 Screening, DayOfWeek, LocalTime, DiscountCondition 이 변경되면 여파를 맞게될 가능성이 크다는 것이다.
+   ### 의존성 전이
+     - 의존성 전이란 위의 PeriodCondition이 Screening에 의존할 때 Screening이 의존하고 있는 Movie, LocalDateTime, Customer에 PeriodCondition 역시 자동으로 간접적으로 의존하게 된다는 것이다.
+     - 이를 '직접 의존성'과 '간접 의존성' 으로 나누어서 보는데 직접의존성은 PeriodCondition과 Screening의 관계 처럼 직접 의존이고 간접의존성은 위의 내용과 같이 의존하고 있는 대상이 의존하는 대상의 변화에 영향을 받을수 있는 경우를 말한다
+     - 즉 의존성이란 **의존하고 있는 대상의 변경에 여향을 받을 수 있는 가능성**이다.
+
+   ### 런타임 의존성과 컴파일 타임 의존성
+     - 런타임 의존성은 말 그대로 어플리케이션이 실행되는 시점을 가리킨다
+     - 컴파일 의존성은 약간 애매한데 일반적으론 컴파일 되는 시점을 가리키지만 문맥에 따라서 코드 그 자체를 가리키기도 한다.
+     - 객체지향 어플리케이션에서 런타임의 주인공은 '객체' 이고 코드 관점에서 주인공은 '클래스'이다
+     ```
+     영화 예매 예제의 Movie와 DiscountPolicy 를 예로 들어 보면 코드를 작성하는 시점(컴파일)에선 Movie 클래스는 AmountDiscountPolicy클래스와 PercentDiscountPolicy클래스를 모르지만 실행시점(런타임)에선 두개와 협력할 수 있어야한다.
+     ```
+     - 코드작성 시점의 Movie '클래스'는 할인 정책을 구현한 두 클래스를 모르지만 실행 시점의 Movie '객체'는 두 클래스의 인스턴스와 협력할 수 있게 된다. 이것이 핵심이다
+     - 유연하고 재사용 가능한 설계를 창조하기 위해선 동일한 소스 코드 구조를 가지고 다양한 실행구조를 만들 수 있어야 한다
+
+   ### 컨택스트 독립성
+     > 클래스는 자신과 협력할 객체의 구체적인 클래스에 대해 알아서는 안된다. 구체적인 클래스를 알면 알수록 그 클래스가 사용되는 특정한 문맥에 강하게 결합되기 때문이다
+     - Movie 클래스 안에 PercentDiscountPolicy클래스에 대한 컴파일 타임 의존성을 명시적으로 표현하는 것은(DiscountPolicy 대신 PercentDiscountPolicy를 데이터로 가지고 있다.) Movie가 비율할인 정책이 적요ㅕㅇ된 영화의 요금을 계산하는 문맥에서 사용될것 이라는 것을 가정한 것이다.
+     - 반면 Movie 클래스에 추상 클래스인 DiscountPolicy에 대한 컴파일 타임 의존성을 명시하는 것은 Movie가 할인 정책에 따라 요금을 계산하지만 구체적으로 어떤 정책을 따르는지는 결정하지 않았다고 명시하는 것이다.
+     - 클래스가 특정 문맥에 강하게 결합될 수록 다른 문맥에서 사용하기 어려워 진다. 클래스가 사용될 특정한 문맥에 대해 '최소한의 가정'만으로 이뤄져 있다면 다른 문맥에서 재사용하기가 수월해지ㅏㅏ고 이를 '컨택스트 독립성' 이라고 한다
+
+   ### 의존성 해결
+     - 컴파일 타입 의존성을 실행 컨텍스트에 맞는 적절한 런타임 의존성으로 교체하는 것을 의존성 해결 이라고 부른다.
+     - 의존성 해결을 위해 일반적으로 다음과 같은 세가지 방법을 사용한다
+       1) 객체를 생성하는 시점에 생성자를 통해 의존성 해결
+       2) 객체 생성후 setter 메서드를 통해 의존성 해결
+       3) 메서드 실행 시 인자를 이용해 의존성 해결
+
