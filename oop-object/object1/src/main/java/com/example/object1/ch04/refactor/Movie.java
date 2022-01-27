@@ -15,6 +15,12 @@ public class Movie {
     private Money discountAmount;
     private double discountPercent;
 
+    public Movie(String title, Duration runningTime, Money fee) {
+        this.title = title;
+        this.runningTime = runningTime;
+        this.fee = fee;
+    }
+
     public Money calculateAmountDiscountedFee() {
         if (movieType != MovieType.AMOUNT_DISCOUNT) {
             throw new IllegalArgumentException();
