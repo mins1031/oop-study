@@ -1,4 +1,4 @@
-package com.example.object1.ch10;
+package com.example.object1.ch10.part1;
 
 import java.math.BigDecimal;
 

@@ -1,4 +1,4 @@
-package com.example.object1.ch10;
+package com.example.object1.ch10.part1;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -18,5 +18,9 @@ public class Call {
 
     public LocalDateTime getFrom() {
         return from;
+    }
+
+    public void test() {
+
     }
 }
